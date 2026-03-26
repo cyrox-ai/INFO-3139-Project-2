@@ -46,7 +46,6 @@ io.on("connect", socket => {
         console.log(joinInfo);
         // The client has to be sending joinInfo in this format
         const { roomName, userName } = joinInfo;
-        const joinTimestampInfo = { sender: 'timestamp', text: '', timestamp: Date.now() }
 
         if (data.isUserNameAvailable(userName)) {
             socket.data = joinInfo;
@@ -56,6 +55,8 @@ io.on("connect", socket => {
                 data.unregisterUser(userName);
                 colors.releaseColor(socket.data.color); // Release the color from socket.data
                 data.addMessage(roomName, { sender: 'system', text: `${userName} has left the room`, timestamp: Date.now() });
+                const leaveTimestampInfo = { sender: 'timestamp', text: '', timestamp: Date.now() }
+                data.addMessage(roomName, leaveTimestampInfo);
                 io.to(roomName).emit("chat update", data.roomLog(roomName));
                 
                 // Emit updated room users to remaining clients
@@ -77,6 +78,7 @@ io.on("connect", socket => {
             });
 
             data.addMessage(roomName, { sender: 'system', text: `${userName} has joined the room`, timestamp: Date.now() });
+            const joinTimestampInfo = { sender: 'timestamp', text: '', timestamp: Date.now() }
             data.addMessage(roomName, joinTimestampInfo);
             io.to(roomName).emit("chat update", data.roomLog(roomName));
             
