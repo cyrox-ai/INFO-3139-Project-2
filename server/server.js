@@ -4,7 +4,7 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 import * as data from "./data.js";
-import { time } from "console";
+import * as colors from "./colors.js";
 
 // Reads PORT from the OS, the --env-file flag, or defaults to 9000
 const PORT = process.env.PORT || 9000;
@@ -50,13 +50,18 @@ io.on("connect", socket => {
 
         if (data.isUserNameAvailable(userName)) {
             socket.data = joinInfo;
+            socket.data.color = colors.getRandomColor(); // Add the color to socket.data
             socket.join(roomName);
-            socket.on("disconnect", () => data.unregisterUser(userName));
+            socket.on("disconnect", () => {
+                data.unregisterUser(userName);
+                colors.releaseColor(socket.data.color); // Release the color from socket.data
+            });
+                
             data.registerUser(userName);
 
             socket.on("message", text => {
-                const { roomName, userName } = socket.data;
-                const messageInfo = { sender: userName, text, timestamp: Date.now() };
+                const { roomName, userName, color } = socket.data;
+                const messageInfo = { sender: userName, text, timestamp: Date.now(), color };
                 const msgTimestampInfo = { sender: 'timestamp', text: '', timestamp: Date.now() }
                 console.log(roomName, msgTimestampInfo)
                 console.log(roomName, messageInfo);
@@ -82,11 +87,11 @@ io.on("connect", socket => {
         socket.join(roomName);
 
         // socket.id is a "connection id" and works as a "single socket room" for direct messages
-      	// socket.emit("joined", roomName); // equivalent call
+        // socket.emit("joined", roomName); // equivalent call
         io.to(socket.id).emit("joined-room", roomName, userName);
 
         // Add your own event emit here
-      	// So that clients on the room can be notified that a new user as joined
+        // So that clients on the room can be notified that a new user as joined
         socket.to(roomName).emit("user-joined", `${userName} has joined ${roomName}`);
     });
 });

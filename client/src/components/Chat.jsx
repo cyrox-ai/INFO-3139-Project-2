@@ -48,8 +48,8 @@ const Chat = (props) => {
 
             return (
                 <div key={index} ref={lastMessageRef} className={messageClassName}>
-                    <div className="message-bubble">
-                        <Typography variant="h6" className="message-text">
+                    <div className="message-bubble" style={{ borderColor: message.color }}>
+                        <Typography variant="h6" className="message-text" sx={{ color: message.color }}>
                             <strong>{message.sender}</strong>
                         </Typography>
                         <Typography variant="h6" className="message-text">
