@@ -4,6 +4,7 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 import * as data from "./data.js";
+import { time } from "console";
 
 // Reads PORT from the OS, the --env-file flag, or defaults to 9000
 const PORT = process.env.PORT || 9000;
@@ -45,8 +46,7 @@ io.on("connect", socket => {
         console.log(joinInfo);
         // The client has to be sending joinInfo in this format
         const { roomName, userName } = joinInfo;
-        const joinTimestamp = new Date(Date.now()).toLocaleString();
-        const joinTimestampInfo = { sender: '', text: `[${joinTimestamp}]` }
+        const joinTimestampInfo = { sender: 'timestamp', text: '', timestamp: Date.now() }
 
         if (data.isUserNameAvailable(userName)) {
             socket.data = joinInfo;
@@ -56,9 +56,8 @@ io.on("connect", socket => {
 
             socket.on("message", text => {
                 const { roomName, userName } = socket.data;
-                const messageInfo = { sender: userName, text };
-                const msgTimestamp = new Date(Date.now()).toLocaleString();
-                const msgTimestampInfo = { sender: '', text: `[${msgTimestamp}]` }
+                const messageInfo = { sender: userName, text, timestamp: Date.now() };
+                const msgTimestampInfo = { sender: 'timestamp', text: '', timestamp: Date.now() }
                 console.log(roomName, msgTimestampInfo)
                 console.log(roomName, messageInfo);
                 data.addMessage(roomName, msgTimestampInfo);
@@ -67,7 +66,7 @@ io.on("connect", socket => {
             });
 
             data.addMessage(roomName, joinTimestampInfo);
-            data.addMessage(roomName, { sender: '', text: `${userName} has joined room ${roomName}` });
+            data.addMessage(roomName, { sender: 'system', text: `${userName} has joined room ${roomName}`, timestamp: Date.now() });
             io.to(roomName).emit("chat update", data.roomLog(roomName));
         }
         else {
