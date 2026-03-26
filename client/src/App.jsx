@@ -36,8 +36,17 @@ function App() {
         error: ''
     });
 
+    
     const hasJoined = () => joinInfo.userName && joinInfo.roomName && !joinInfo.error;
-    const joinRoom = joinData => socket.current.emit("join", joinData);
+    const joinRoom = (joinData) => {
+        if (!socket.current.connected) socket.current.connect();
+        socket.current.emit("join", joinData);
+    };
+    const leaveRoom = () => {
+        socket.current.disconnect();
+        setJoinInfo({ userName: '', roomName: '', error: '' });
+        setChatLog([]);
+    };
 
     /* Chat */
     const [chatLog, setChatLog] = useState([]);
@@ -84,7 +93,7 @@ function App() {
             <Header title="Cool People Only - Aiden Anderson" />
             {
                 hasJoined() ?
-                    <Chat {...joinInfo} sendMessage={sendMessage} chatLog={chatLog}/>
+                    <Chat {...joinInfo} sendMessage={sendMessage} chatLog={chatLog} leaveRoom={leaveRoom}/>
                     : <Login joinRoom={joinRoom} error={joinInfo.error} />
             }
         </ThemeProvider>

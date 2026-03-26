@@ -128,7 +128,7 @@ const Chat = (props) => {
                     <MenuIcon />
                 </Button>
                 <CardHeader title={props.roomName} />
-                <Button variant="contained">
+                <Button variant="contained" onClick={props.leaveRoom}>
                     <LogoutIcon />
                 </Button>
             </Stack>

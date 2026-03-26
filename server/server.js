@@ -55,8 +55,10 @@ io.on("connect", socket => {
             socket.on("disconnect", () => {
                 data.unregisterUser(userName);
                 colors.releaseColor(socket.data.color); // Release the color from socket.data
+                data.addMessage(roomName, { sender: 'system', text: `${userName} has left the room`, timestamp: Date.now() });
+                io.to(roomName).emit("chat update", data.roomLog(roomName));
             });
-                
+
             data.registerUser(userName);
 
             socket.on("message", text => {
@@ -67,7 +69,7 @@ io.on("connect", socket => {
                 io.to(roomName).emit("chat update", data.roomLog(roomName));
             });
 
-            data.addMessage(roomName, { sender: 'system', text: `${userName} has joined room ${roomName}`, timestamp: Date.now() });
+            data.addMessage(roomName, { sender: 'system', text: `${userName} has joined the room`, timestamp: Date.now() });
             data.addMessage(roomName, joinTimestampInfo);
             io.to(roomName).emit("chat update", data.roomLog(roomName));
         }
