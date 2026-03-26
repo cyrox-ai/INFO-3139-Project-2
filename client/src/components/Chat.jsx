@@ -21,11 +21,11 @@ const Chat = (props) => {
     const renderMessage = (message, index) => {
         /* New Day Messages */
         if (message.newDay) {
-                <div key={index} ref={lastMessageRef} style={{ marginBottom: "1em" }}>
-                    <Typography variant="h6" textAlign="center">
-                        <strong>{message.text}</strong>
-                    </Typography>
-                </div>
+            return <div key={index} ref={lastMessageRef} style={{ marginBottom: "1em" }}>
+                <Typography variant="h6" textAlign="center">
+                    <strong>{message.text}</strong>
+                </Typography>
+            </div>;
         }
 
         if (message.sender === 'timestamp') {
@@ -44,11 +44,23 @@ const Chat = (props) => {
         }
         else {
             const isCurrentUser = message.sender === props.userName;
-            return <div key={index}>
-                <Typography ref={lastMessageRef} variant="h6" style={{ textAlign: isCurrentUser ? "right" : "left" }}>
-                    {`[${message.sender}] ${message.text}`}
-                </Typography>
-            </div>;
+            const messageClassName = isCurrentUser ? "user-message" : "message";
+
+            return (
+                <div key={index} ref={lastMessageRef} className={messageClassName}>
+                    <div className="message-bubble">
+                        <Typography variant="h6" className="message-text">
+                            <strong>{message.sender}</strong>
+                        </Typography>
+                        <Typography variant="h6" className="message-text">
+                            {message.text}
+                        </Typography>
+                        <Typography variant="body2" sx={{ textAlign: "right" }}>
+                            <i>{fns.format(new Date(message.timestamp), "HH:mm")}</i>
+                        </Typography>
+                    </div>
+                </div>
+            );
         }
     }
 
