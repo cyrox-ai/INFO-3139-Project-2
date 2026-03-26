@@ -62,16 +62,13 @@ io.on("connect", socket => {
             socket.on("message", text => {
                 const { roomName, userName, color } = socket.data;
                 const messageInfo = { sender: userName, text, timestamp: Date.now(), color };
-                const msgTimestampInfo = { sender: 'timestamp', text: '', timestamp: Date.now() }
-                console.log(roomName, msgTimestampInfo)
                 console.log(roomName, messageInfo);
-                data.addMessage(roomName, msgTimestampInfo);
                 data.addMessage(roomName, messageInfo);
                 io.to(roomName).emit("chat update", data.roomLog(roomName));
             });
 
-            data.addMessage(roomName, joinTimestampInfo);
             data.addMessage(roomName, { sender: 'system', text: `${userName} has joined room ${roomName}`, timestamp: Date.now() });
+            data.addMessage(roomName, joinTimestampInfo);
             io.to(roomName).emit("chat update", data.roomLog(roomName));
         }
         else {
