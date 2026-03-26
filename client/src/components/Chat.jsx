@@ -110,7 +110,25 @@ const Chat = (props) => {
     const [messageText, setMessageText] = useState("");
 
     const renderMenu = () => {
-
+        const roomUsers = props.roomUsers?.users ?? [];
+        return (
+            <Box sx={{ p: "2em", minWidth: "250px" }}>
+                <Typography variant="h4" style={{ textAlign: "center" }}>
+                    {props.roomName}
+                </Typography>
+                <Typography variant="h6" style={{ textAlign: "center" }}>
+                    {roomUsers.length} current user(s)
+                </Typography>
+                <Divider sx={{ mb: "0em", mt: "1em" }} />
+                <List>
+                    {roomUsers.map((user, index) => (
+                        <Box key={index}>
+                            <Typography variant="h5" sx={{mt: "0.5em"}} style={{ color: user.color }}>{user.userName}</Typography>
+                        </Box>
+                    ))}
+                </List>
+            </Box>
+        );
     }
 
     /* Render Component */

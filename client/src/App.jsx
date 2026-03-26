@@ -50,6 +50,7 @@ function App() {
 
     /* Chat */
     const [chatLog, setChatLog] = useState([]);
+    const [roomUsers, setRoomUsers] = useState([]);
     const sendMessage = (text) => {
         socket.current.send(text);
     }
@@ -73,6 +74,9 @@ function App() {
 
             // Handle chat
             ws.on("chat update", setChatLog);
+            
+            // Handle room users
+            ws.on("room-users", setRoomUsers);
 
             socket.current = ws;
             effectRan.current = true; // Flag to prevent connecting twice
@@ -93,7 +97,7 @@ function App() {
             <Header title="Cool People Only - Aiden Anderson" />
             {
                 hasJoined() ?
-                    <Chat {...joinInfo} sendMessage={sendMessage} chatLog={chatLog} leaveRoom={leaveRoom}/>
+                    <Chat {...joinInfo} sendMessage={sendMessage} chatLog={chatLog} leaveRoom={leaveRoom} roomUsers={roomUsers}/>
                     : <Login joinRoom={joinRoom} error={joinInfo.error} />
             }
         </ThemeProvider>

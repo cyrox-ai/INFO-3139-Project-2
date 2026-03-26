@@ -57,6 +57,13 @@ io.on("connect", socket => {
                 colors.releaseColor(socket.data.color); // Release the color from socket.data
                 data.addMessage(roomName, { sender: 'system', text: `${userName} has left the room`, timestamp: Date.now() });
                 io.to(roomName).emit("chat update", data.roomLog(roomName));
+                
+                // Emit updated room users to remaining clients
+                const roomUsersList = Array.from(io.sockets.adapter.rooms.get(roomName) || []).map(socketId => {
+                    const s = io.sockets.sockets.get(socketId);
+                    return { userName: s.data.userName, color: s.data.color };
+                });
+                io.to(roomName).emit("room-users", { roomName, users: roomUsersList });
             });
 
             data.registerUser(userName);
@@ -72,6 +79,13 @@ io.on("connect", socket => {
             data.addMessage(roomName, { sender: 'system', text: `${userName} has joined the room`, timestamp: Date.now() });
             data.addMessage(roomName, joinTimestampInfo);
             io.to(roomName).emit("chat update", data.roomLog(roomName));
+            
+            // Emit room users to all clients in the room
+            const roomUsersList = Array.from(io.sockets.adapter.rooms.get(roomName) || []).map(socketId => {
+                const s = io.sockets.sockets.get(socketId);
+                return { userName: s.data.userName, color: s.data.color };
+            });
+            io.to(roomName).emit("room-users", { roomName, users: roomUsersList });
         }
         else {
             joinInfo.error = `The name ${userName} is already taken`;
