@@ -9,12 +9,20 @@ import {
     TextField,
     Button,
     List,
+    Stack,
+    Drawer
 } from "@mui/material";
 
 import SendIcon from '@mui/icons-material/Send';
+import LogoutIcon from '@mui/icons-material/Logout';
+import MenuIcon from '@mui/icons-material/Menu';
+
 import * as fns from "date-fns";
 
 const Chat = (props) => {
+    /* Menu */
+    const [menuOpen, setMenuOpen] = useState(false);
+
     /* Chat Log */
     const lastMessageRef = useRef(null);
 
@@ -101,10 +109,30 @@ const Chat = (props) => {
     /* Send Message */
     const [messageText, setMessageText] = useState("");
 
+    const renderMenu = () => {
+
+    }
+
     /* Render Component */
     return (
         <Paper elevation={4} sx={{ mt: "0.5em", display: "flex", flexDirection: "column" }}>
-            <CardHeader title={`${props.roomName} (as ${props.userName})`} />
+            {/* <CardHeader title={`${props.roomName} (as ${props.userName})`} /> */}
+            <Drawer anchor="left" open={menuOpen} onClose={() => setMenuOpen(false)}>
+                {renderMenu()}
+            </Drawer>
+            <Stack direction="row" sx={{
+                alignItems: "center", justifyContent: "space-between",
+                pl: "1em", pr: "1em"
+            }}>
+                <Button variant="contained" onClick={() => setMenuOpen(true)} >
+                    <MenuIcon />
+                </Button>
+                <CardHeader title={props.roomName} />
+                <Button variant="contained">
+                    <LogoutIcon />
+                </Button>
+            </Stack>
+            <Divider />
             <Divider />
             <CardContent>
                 <List sx={{ height: "60vh", overflowY: "scroll", textAlign: "left" }}>
