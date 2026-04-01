@@ -58,13 +58,21 @@ io.on("connect", socket => {
                 const leaveTimestampInfo = { sender: 'timestamp', text: '', timestamp: Date.now() }
                 data.addMessage(roomName, leaveTimestampInfo);
                 io.to(roomName).emit("chat update", data.roomLog(roomName));
-                
+
                 // Emit updated room users to remaining clients
                 const roomUsersList = Array.from(io.sockets.adapter.rooms.get(roomName) || []).map(socketId => {
                     const s = io.sockets.sockets.get(socketId);
                     return { userName: s.data.userName, color: s.data.color };
                 });
                 io.to(roomName).emit("room-users", { roomName, users: roomUsersList });
+                data.updateTypingStatus(roomName, userName, false);
+                io.to(roomName).emit("typing", data.getTypingUsers(roomName));
+            });
+
+            socket.on("typing", typingInfo => {
+                const { roomName, userName, isTyping } = typingInfo;
+                data.updateTypingStatus(roomName, userName, isTyping);
+                io.to(roomName).emit("typing", data.getTypingUsers(roomName));
             });
 
             data.registerUser(userName);
@@ -81,13 +89,14 @@ io.on("connect", socket => {
             const joinTimestampInfo = { sender: 'timestamp', text: '', timestamp: Date.now() }
             data.addMessage(roomName, joinTimestampInfo);
             io.to(roomName).emit("chat update", data.roomLog(roomName));
-            
+
             // Emit room users to all clients in the room
             const roomUsersList = Array.from(io.sockets.adapter.rooms.get(roomName) || []).map(socketId => {
                 const s = io.sockets.sockets.get(socketId);
                 return { userName: s.data.userName, color: s.data.color };
             });
             io.to(roomName).emit("room-users", { roomName, users: roomUsersList });
+            socket.emit("typing", data.getTypingUsers(roomName));
         }
         else {
             joinInfo.error = `The name ${userName} is already taken`;

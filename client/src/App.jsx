@@ -51,8 +51,13 @@ function App() {
     /* Chat */
     const [chatLog, setChatLog] = useState([]);
     const [roomUsers, setRoomUsers] = useState([]);
+    const [typingUsers, setTypingUsers] = useState([]);
     const sendMessage = (text) => {
         socket.current.send(text);
+    }
+
+    const notifyTyping = (typingInfo) => {
+        socket.current.emit("typing", typingInfo);
     }
 
     /* WebSocket */
@@ -78,6 +83,8 @@ function App() {
             // Handle room users
             ws.on("room-users", setRoomUsers);
 
+            ws.on("typing", setTypingUsers);
+
             socket.current = ws;
             effectRan.current = true; // Flag to prevent connecting twice
         }
@@ -97,8 +104,8 @@ function App() {
             <Header title="Cool People Only - Aiden Anderson" />
             {
                 hasJoined() ?
-                    <Chat {...joinInfo} sendMessage={sendMessage} chatLog={chatLog} leaveRoom={leaveRoom} roomUsers={roomUsers}/>
-                    : <Login joinRoom={joinRoom} error={joinInfo.error} />
+                    <Chat {...joinInfo} sendMessage={sendMessage} chatLog={chatLog} leaveRoom={leaveRoom} roomUsers={roomUsers} notifyTyping={notifyTyping} typingUsers={typingUsers}/>
+                    : <Login joinRoom={joinRoom} error={joinInfo.error}/>
             }
         </ThemeProvider>
     );
