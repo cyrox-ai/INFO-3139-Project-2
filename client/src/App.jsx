@@ -56,6 +56,21 @@ function App() {
         socket.current.send(text);
     }
 
+    const editMessage = (text) => {
+        socket.current.emit("edit", {
+            roomName: joinInfo.roomName,
+            userName: joinInfo.userName,
+            text,
+        });
+    }
+
+    const deleteMessage = () => {
+        socket.current.emit("delete", {
+            roomName: joinInfo.roomName,
+            userName: joinInfo.userName,
+        });
+    }
+
     const notifyTyping = (typingInfo) => {
         socket.current.emit("typing", typingInfo);
     }
@@ -104,7 +119,17 @@ function App() {
             <Header title="Cool People Only - Aiden Anderson" />
             {
                 hasJoined() ?
-                    <Chat {...joinInfo} sendMessage={sendMessage} chatLog={chatLog} leaveRoom={leaveRoom} roomUsers={roomUsers} notifyTyping={notifyTyping} typingUsers={typingUsers}/>
+                    <Chat
+                        {...joinInfo}
+                        sendMessage={sendMessage}
+                        editMessage={editMessage}
+                        deleteMessage={deleteMessage}
+                        chatLog={chatLog}
+                        leaveRoom={leaveRoom}
+                        roomUsers={roomUsers}
+                        notifyTyping={notifyTyping}
+                        typingUsers={typingUsers}
+                    />
                     : <Login joinRoom={joinRoom} error={joinInfo.error}/>
             }
         </ThemeProvider>

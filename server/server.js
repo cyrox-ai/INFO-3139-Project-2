@@ -85,12 +85,37 @@ io.on("connect", socket => {
                 io.to(roomName).emit("chat update", data.roomLog(roomName));
             });
 
+            socket.on("edit", editInfo => {
+                const { roomName, userName } = socket.data;
+                const correctSender = editInfo?.roomName === roomName && editInfo?.userName === userName;
+
+                if (!correctSender)
+                    return;
+
+                const edited = data.editLastMessage(roomName, userName, editInfo.text);
+
+                if (edited)
+                    io.to(roomName).emit("chat update", data.roomLog(roomName));
+            });
+
+            socket.on("delete", deleteInfo => {
+                const { roomName, userName } = socket.data;
+                const correctSender = deleteInfo?.roomName === roomName && deleteInfo?.userName === userName;
+
+                if (!correctSender)
+                    return;
+
+                const deleted = data.deleteLastMessage(roomName, userName);
+
+                if (deleted)
+                    io.to(roomName).emit("chat update", data.roomLog(roomName));
+            });
+
             data.addMessage(roomName, { sender: 'system', text: `${userName} has joined the room`, timestamp: Date.now() });
             const joinTimestampInfo = { sender: 'timestamp', text: '', timestamp: Date.now() }
             data.addMessage(roomName, joinTimestampInfo);
             io.to(roomName).emit("chat update", data.roomLog(roomName));
 
-            // Emit room users to all clients in the room
             const roomUsersList = Array.from(io.sockets.adapter.rooms.get(roomName) || []).map(socketId => {
                 const s = io.sockets.sockets.get(socketId);
                 return { userName: s.data.userName, color: s.data.color };

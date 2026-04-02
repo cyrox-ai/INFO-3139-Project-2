@@ -26,6 +26,14 @@ const addMessage = (roomName, messageInfo) => {
     Room.get(roomName).addMessage(messageInfo);
 }
 
+const editLastMessage = (roomName, userName, text) => {
+    return Room.get(roomName).editLastMessage(userName, text);
+}
+
+const deleteLastMessage = (roomName, userName) => {
+    return Room.get(roomName).deleteLastMessage(userName);
+}
+
 const updateTypingStatus = (roomName, userName, isTyping) => {
     Room.get(roomName).updateTypingStatus(userName, isTyping);
 }
@@ -82,6 +90,47 @@ class Room {
         messageInfo.timestamp = Date.now();
         this.#log.push(messageInfo);
     }
+
+    editLastMessage(userName, text) {
+        const trimmedText = text?.trim();
+
+        if (!trimmedText) {
+            return false;
+        }
+
+        for (let index = this.#log.length - 1; index >= 0; index -= 1) {
+            const message = this.#log[index];
+
+            if (message.sender !== userName)
+                continue;
+
+            if (message.deletedAt)
+                return false;
+
+            message.text = trimmedText;
+            message.editedAt = Date.now();
+            return true;
+        }
+
+        return false;
+    }
+
+    deleteLastMessage(userName) {
+        for (let index = this.#log.length - 1; index >= 0; index -= 1) {
+            const message = this.#log[index];
+
+            if (message.sender !== userName)
+                continue;
+
+            if (message.deletedAt)
+                return false;
+
+            message.deletedAt = Date.now();
+            return true;
+        }
+
+        return false;
+    }
 }
 
 
@@ -92,6 +141,8 @@ export {
     isUserNameAvailable,
     roomLog,
     addMessage,
+    editLastMessage,
+    deleteLastMessage,
     updateTypingStatus,
     getTypingUsers
 }

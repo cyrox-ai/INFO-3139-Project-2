@@ -23,6 +23,11 @@ const Chat = (props) => {
     /* Menu */
     const [menuOpen, setMenuOpen] = useState(false);
 
+    const clearTypingState = () => {
+        const { userName, roomName } = props;
+        props.notifyTyping && props.notifyTyping({ roomName, userName, isTyping: false });
+    };
+
     /* Chat Log */
     const lastMessageRef = useRef(null);
 
@@ -64,6 +69,7 @@ const Chat = (props) => {
         else {
             const isCurrentUser = message.sender === props.userName;
             const messageClassName = isCurrentUser ? "user-message" : "message";
+            const statusText = message.deletedAt ? "(deleted)" : message.editedAt ? "(edited)" : "";
 
             return (
                 <div key={index} ref={lastMessageRef} className={messageClassName}>
@@ -71,12 +77,19 @@ const Chat = (props) => {
                         <Typography variant="h6" className="message-text" sx={{ color: message.color }}>
                             <strong>{message.sender}</strong>
                         </Typography>
-                        <Typography variant="h6" className="message-text">
-                            {message.text}
-                        </Typography>
-                        <Typography variant="body2" sx={{ textAlign: "right" }}>
-                            <i>{fns.format(new Date(message.timestamp), "HH:mm")}</i>
-                        </Typography>
+                        {!message.deletedAt && (
+                            <Typography variant="h6" className="message-text">
+                                {message.text}
+                            </Typography>
+                        )}
+                        <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
+                            <Typography variant="body2" sx={{ textAlign: "right", width: "100%" }}>
+                                <i>
+                                    {statusText} {" "}
+                                    {fns.format(new Date(message.timestamp), "HH:mm")}
+                                </i>
+                            </Typography>
+                        </Box>
                     </div>
                 </div>
             );
@@ -135,13 +148,40 @@ const Chat = (props) => {
     /* Send Message */
 
     const [messageText, setMessageText] = useState("");
+
+    const handleCommand = (rawText) => {
+        const trimmedText = rawText.trimStart();
+
+        if (/^\/del\s*$/i.test(trimmedText)) {
+            props.deleteMessage?.();
+            return true;
+        }
+
+        if (/^\/edit(\s|$)/i.test(trimmedText)) {
+            const editedText = trimmedText.slice(5).trim();
+
+            if (!editedText) {
+                return true;
+            }
+
+            props.editMessage?.(editedText);
+            return true;
+        }
+
+        return false;
+    };
+
     const handleSendMessage = () => {
         if (!messageText) return;
-        props.sendMessage(messageText);
+
+        const handledCommand = handleCommand(messageText);
+
+        if (!handledCommand) {
+            props.sendMessage(messageText);
+        }
+
         setMessageText('');
-        
-		const { userName, roomName } = props;
-        props.notifyTyping && props.notifyTyping({ roomName, userName, isTyping: false });
+        clearTypingState();
     }
 
     const renderMenu = () => {
